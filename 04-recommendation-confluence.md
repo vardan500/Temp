@@ -49,7 +49,7 @@
 
 ## 1. Context
 
-The credit union is initiating an internal generative AI capability with two coupled goals:
+The company is initiating an internal generative AI capability with two coupled goals:
 
 - An **internal AI chat application** for employees (call center support, internal Q&A, policy lookup, drafting assistance).
 - A **reusable internal AI API** that other internal systems can call (e.g., document classification, summarization, intent routing, lightweight scoring).
