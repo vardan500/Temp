@@ -84,7 +84,7 @@ The default is Foundry. The burden of proof sits on Vertex to demonstrate a mate
 | **Position relative to customer** | Native — inside existing Azure tenant, EA, identity, network, compliance pack | External — net-new cloud presence, identity federation, compliance evidence |
 | **Model catalog (headline)** | OpenAI GPT-4o / 4.1 / o-series, Anthropic Claude, Meta Llama, Mistral, Cohere, Microsoft Phi | Google Gemini, Anthropic Claude (via Model Garden), Meta Llama, third-party via Model Garden |
 | **Inference services** | Foundry-managed endpoints, serverless and provisioned throughput | Vertex-managed endpoints, online and batch prediction |
-| **RAG / grounding (native)** | Azure AI Search, Fabric / OneLake, ADLS, SharePoint connectors, Purview lineage | Vertex AI Search, BigQuery, GCS, Vertex RAG Engine |
+| **RAG / grounding (native)** | Azure AI Search with **first-party Microsoft 365 connectors** (SharePoint Online, OneDrive, Teams, Exchange via Microsoft Graph), Fabric / OneLake, ADLS, Purview lineage. Permission-trimmed RAG via Entra ID is native — the chat respects each user's existing M365 access rights. | Vertex AI Search, BigQuery, GCS, Vertex RAG Engine. **No first-party M365 connectors** — SharePoint / OneDrive / Teams ingestion requires custom Microsoft Graph API pipelines or third-party connectors, with permission and sensitivity-label fidelity harder to preserve. |
 | **Safety / responsible AI** | Azure AI Content Safety, groundedness, jailbreak detection, PII detection | Safety Filters, Model Armor, responsible-AI tooling |
 | **Prompt ops / evals** | Prompt Flow, Foundry evals, Azure ML integration | Vertex AI Studio, Vertex Pipelines, eval services |
 
@@ -166,7 +166,7 @@ Weights:
 | 1 | Model fit for named intents | C | ✅ Meets | ✅ Meets | No Vertex-exclusive capability identified as a requirement for the initial workload. Both platforms cover internal chat and the planned reusable AI API. |
 | 2 | Data path / network | C | ✅ Strong | ⚠️ Adequate w/ B2 only | Single-cloud trumps cross-cloud for member-adjacent data. Vertex requires PSC + Partner Interconnect to be acceptable. |
 | 3 | Identity and access | C | ✅ Strong (native Entra) | ⚠️ Adequate w/ WIF | Second identity model = net-new admin burden. |
-| 4 | Grounding / data integration | H | ✅ Strong (Fabric / ADLS / Search / Purview) | ⚠️ Requires data copy or sync | No business reason to duplicate the grounding corpus into GCP today. |
+| 4 | Grounding / data integration | H | ✅ Strong (AI Search + first-party M365 connectors / Fabric / ADLS / Purview) | ⚠️ No first-party M365 connectors; requires custom Graph-API ingestion or third-party connectors | First-party Microsoft Graph integration gives Foundry materially tighter RAG over the customer's SharePoint / OneDrive / Teams content than Vertex offers natively, including Entra-based permission trimming. |
 | 5 | LLM gateway pattern | H | ✅ Native APIM AI Gateway over Private Endpoint | ✅ Same APIM in front, cross-cloud backend | Pattern is portable; favors Foundry only because backend is closer. |
 | 6 | Compliance / examiner evidence | H | ✅ No delta | ⚠️ Net-new pack required | Recurring annual cost. |
 | 7 | Responsible AI tooling | M | ✅ Content Safety, groundedness, jailbreak | ✅ Safety Filters, Model Armor | At parity for this workload. |
@@ -198,13 +198,14 @@ Weights:
 
 ## 6. Rationale
 
-The recommendation rests on five points, in order of weight:
+The recommendation rests on six points, in order of weight:
 
 1. **Cross-cloud cost is real and recurring, single-cloud savings are real and recurring.** For an internal AI API expected to serve multiple consumer systems with member-adjacent data, every prompt would cross a cloud boundary in the Vertex path. The cost is not only egress — it is the **ongoing operational and compliance overhead** of running a second cloud presence.
 2. **No Vertex-exclusive capability is currently named as a requirement** for the initial workload. Foundry's catalog covers internal chat and the planned reusable AI API with credible model options (OpenAI, Anthropic, Meta). Choosing Vertex today would be on speculation of a future need rather than a known one.
 3. **Identity, data, and governance are already coherent in Azure.** Entra ID, Purview lineage, Sentinel ingestion, Conditional Access, and managed identities reach the AI service natively in the Foundry path. The Vertex path replaces native integration with a federated equivalent — workable, but a net-new operational surface that must be staffed forever.
-4. **The compliance evidence delta is permanent, not one-time.** Adding Vertex means producing and maintaining a second evidence pack for examiners every year. The marginal annual cost is non-trivial for a credit union risk function.
-5. **The APIM AI Gateway investment preserves optionality.** Because the gateway pattern is portable, choosing Foundry today does not foreclose adding Vertex tomorrow for a specific, justified workload. The decision is reversible at the workload level without rewriting consumers.
+4. **RAG over Microsoft 365 content is materially simpler on Foundry.** The customer's grounding corpus lives in SharePoint, OneDrive, Teams, and Exchange (Microsoft 365). Azure AI Search and Foundry's "Add your data" experience have **first-party Microsoft Graph connectors** that ingest M365 content with **Entra ID permission-trimming** (so the chat respects each user's existing access rights) and **Purview sensitivity-label propagation**. Vertex AI Search has no first-party M365 connector — reaching the same corpus requires custom Microsoft Graph pipelines or third-party connectors, and preserving permission and label fidelity end-to-end is materially harder. For a credit union whose institutional knowledge lives in M365, this is a meaningful day-one advantage.
+5. **The compliance evidence delta is permanent, not one-time.** Adding Vertex means producing and maintaining a second evidence pack for examiners every year. The marginal annual cost is non-trivial for a credit union risk function.
+6. **The APIM AI Gateway investment preserves optionality.** Because the gateway pattern is portable, choosing Foundry today does not foreclose adding Vertex tomorrow for a specific, justified workload. The decision is reversible at the workload level without rewriting consumers.
 
 ---
 
