@@ -1,0 +1,40 @@
+{
+  "properties": {
+    "displayName": "SecOps - Require secure transfer (HTTPS) when data is 'restricted'",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "For storage accounts classified 'restricted', audits or denies accounts that do not enforce HTTPS-only (supportsHttpsTrafficOnly). Protects member NPI / cardholder data in transit.",
+    "metadata": { "category": "Security", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "classificationTag": {
+        "type": "String",
+        "metadata": { "displayName": "Data classification tag name" },
+        "defaultValue": "data classification"
+      },
+      "restrictedValue": {
+        "type": "String",
+        "metadata": { "displayName": "Value that denotes regulated data" },
+        "defaultValue": "restricted"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('classificationTag'), ']')]",
+            "equals": "[parameters('restrictedValue')]"
+          },
+          { "field": "type", "equals": "Microsoft.Storage/storageAccounts" },
+          { "field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly", "notEquals": true }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

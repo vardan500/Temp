@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "displayName": "SecOps - Restrict allowed values for 'data classification' tag",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits or denies resources whose 'data classification' tag value is not in the approved list. Only evaluates when the tag exists (pair with require-tag-data-classification). Effect parameterized for phased enforcement.",
+    "metadata": { "category": "Tags", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "data classification"
+      },
+      "allowedValues": {
+        "type": "Array",
+        "metadata": { "displayName": "Allowed data classification values" },
+        "defaultValue": [ "public", "internal", "confidential", "restricted" ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "true"
+          },
+          {
+            "not": {
+              "field": "[concat('tags[', parameters('tagName'), ']')]",
+              "in": "[parameters('allowedValues')]"
+            }
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

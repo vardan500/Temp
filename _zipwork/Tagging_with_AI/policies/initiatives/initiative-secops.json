@@ -1,0 +1,65 @@
+{
+  "properties": {
+    "displayName": "Tagging - SecOps Pillar",
+    "policyType": "Custom",
+    "description": "SecOps-pillar tag governance: requires and value-restricts 'data classification' (incl. resource groups), cascades it from the resource group (Modify), requires 'compliance' on regulated data, and links data classification = restricted to security controls (deny public network, require HTTPS). Two effect parameters: 'auditDenyEffect' for audit/deny policies and 'inheritEffect' for the Modify cascade.",
+    "metadata": { "category": "Tags", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "auditDenyEffect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect for audit/deny SecOps policies" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "inheritEffect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect for the data classification inherit (Modify) policy" },
+        "allowedValues": [ "Modify", "Disabled" ],
+        "defaultValue": "Disabled"
+      }
+    },
+    "policyDefinitions": [
+      {
+        "policyDefinitionReferenceId": "require-data-classification",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/require-tag-data-classification')]",
+        "parameters": { "effect": { "value": "[parameters('auditDenyEffect')]" } },
+        "groupNames": [ "classification" ]
+      },
+      {
+        "policyDefinitionReferenceId": "allowed-data-classification",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/allowed-values-data-classification')]",
+        "parameters": { "effect": { "value": "[parameters('auditDenyEffect')]" } },
+        "groupNames": [ "classification" ]
+      },
+      {
+        "policyDefinitionReferenceId": "inherit-data-classification",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/inherit-tag-from-rg-data-classification')]",
+        "parameters": { "effect": { "value": "[parameters('inheritEffect')]" } },
+        "groupNames": [ "classification" ]
+      },
+      {
+        "policyDefinitionReferenceId": "require-compliance-restricted",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/require-compliance-when-restricted')]",
+        "parameters": { "effect": { "value": "[parameters('auditDenyEffect')]" } },
+        "groupNames": [ "regulatory" ]
+      },
+      {
+        "policyDefinitionReferenceId": "deny-public-network-restricted",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/deny-public-network-when-restricted')]",
+        "parameters": { "effect": { "value": "[parameters('auditDenyEffect')]" } },
+        "groupNames": [ "controls" ]
+      },
+      {
+        "policyDefinitionReferenceId": "require-https-restricted",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/require-secure-transfer-when-restricted')]",
+        "parameters": { "effect": { "value": "[parameters('auditDenyEffect')]" } },
+        "groupNames": [ "controls" ]
+      }
+    ],
+    "policyDefinitionGroups": [
+      { "name": "classification", "displayName": "Data classification tagging" },
+      { "name": "regulatory", "displayName": "Regulatory scope" },
+      { "name": "controls", "displayName": "Classification-driven security controls" }
+    ]
+  }
+}

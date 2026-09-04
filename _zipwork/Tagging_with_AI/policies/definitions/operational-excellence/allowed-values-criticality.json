@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "displayName": "OpsExcellence - Restrict allowed values for 'criticality' tag",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits or denies resources whose 'criticality' tag value is not in the approved list. Drives DR/BCP prioritization; distinct from the architectural 'tier' tag. Only evaluates when the tag exists.",
+    "metadata": { "category": "Tags", "pillar": "OperationalExcellence", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "criticality"
+      },
+      "allowedValues": {
+        "type": "Array",
+        "metadata": { "displayName": "Allowed criticality values" },
+        "defaultValue": [ "mission-critical", "high", "medium", "low" ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "true"
+          },
+          {
+            "not": {
+              "field": "[concat('tags[', parameters('tagName'), ']')]",
+              "in": "[parameters('allowedValues')]"
+            }
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

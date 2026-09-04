@@ -1,0 +1,10 @@
+// Transactions per consuming application — Azure AI Services (Speech, Document
+// Intelligence, AI Search, Content Safety). Use when billing is transaction/operation
+// based rather than tokens. Identity name == 'app' tag value (one identity per app).
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.COGNITIVESERVICES" or ResourceProvider == "MICROSOFT.SEARCH"
+| where TimeGenerated between (startofmonth(now()) .. now())
+| extend app = tostring(properties_app_id_s)
+| extend operation = tostring(OperationName)
+| summarize transactions = count() by app, operation
+| order by transactions desc

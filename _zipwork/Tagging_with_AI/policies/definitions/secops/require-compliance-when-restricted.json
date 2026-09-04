@@ -1,0 +1,47 @@
+{
+  "properties": {
+    "displayName": "SecOps - Require 'compliance' tag when data is 'restricted'",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits or denies resources classified 'restricted' (member NPI / cardholder data) that do not carry a 'compliance' tag indicating the applicable regulatory regime(s). Ensures regulated data is auditable by scope.",
+    "metadata": { "category": "Tags", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "classificationTag": {
+        "type": "String",
+        "metadata": { "displayName": "Data classification tag name" },
+        "defaultValue": "data classification"
+      },
+      "restrictedValue": {
+        "type": "String",
+        "metadata": { "displayName": "Value that denotes regulated data" },
+        "defaultValue": "restricted"
+      },
+      "complianceTag": {
+        "type": "String",
+        "metadata": { "displayName": "Compliance tag name" },
+        "defaultValue": "compliance"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('classificationTag'), ']')]",
+            "equals": "[parameters('restrictedValue')]"
+          },
+          {
+            "field": "[concat('tags[', parameters('complianceTag'), ']')]",
+            "exists": "false"
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

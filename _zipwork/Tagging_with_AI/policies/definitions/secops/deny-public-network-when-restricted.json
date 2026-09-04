@@ -1,0 +1,66 @@
+{
+  "properties": {
+    "displayName": "SecOps - Deny public network access when data is 'restricted'",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "For resources classified 'restricted', audits or denies public network access on common data services (Storage, SQL, Key Vault, Cosmos DB), pushing regulated workloads onto private networking. Only evaluates resources carrying data classification = restricted.",
+    "metadata": { "category": "Security", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "classificationTag": {
+        "type": "String",
+        "metadata": { "displayName": "Data classification tag name" },
+        "defaultValue": "data classification"
+      },
+      "restrictedValue": {
+        "type": "String",
+        "metadata": { "displayName": "Value that denotes regulated data" },
+        "defaultValue": "restricted"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('classificationTag'), ']')]",
+            "equals": "[parameters('restrictedValue')]"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  { "field": "type", "equals": "Microsoft.Storage/storageAccounts" },
+                  { "field": "Microsoft.Storage/storageAccounts/publicNetworkAccess", "notEquals": "Disabled" }
+                ]
+              },
+              {
+                "allOf": [
+                  { "field": "type", "equals": "Microsoft.Sql/servers" },
+                  { "field": "Microsoft.Sql/servers/publicNetworkAccess", "notEquals": "Disabled" }
+                ]
+              },
+              {
+                "allOf": [
+                  { "field": "type", "equals": "Microsoft.KeyVault/vaults" },
+                  { "field": "Microsoft.KeyVault/vaults/publicNetworkAccess", "notEquals": "Disabled" }
+                ]
+              },
+              {
+                "allOf": [
+                  { "field": "type", "equals": "Microsoft.DocumentDB/databaseAccounts" },
+                  { "field": "Microsoft.DocumentDB/databaseAccounts/publicNetworkAccess", "notEquals": "Disabled" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

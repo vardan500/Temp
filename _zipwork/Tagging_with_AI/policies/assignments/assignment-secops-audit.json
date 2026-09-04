@@ -1,0 +1,18 @@
+{
+  "properties": {
+    "displayName": "Tagging SecOps - Subscription Audit (Phase 1)",
+    "description": "Phase 1 assignment of the SecOps tagging initiative at subscription scope. Audit/deny policies start at Audit; the data-classification inherit (Modify) starts Disabled. Phase 2: set inheritEffect=Modify and run remediation. Phase 3: set auditDenyEffect=Deny (target Prod). A system-assigned identity is included so the Modify policy can be enabled without re-creating the assignment.",
+    "policyDefinitionId": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policySetDefinitions/initiative-secops",
+    "enforcementMode": "Default",
+    "parameters": {
+      "auditDenyEffect": { "value": "Audit" },
+      "inheritEffect": { "value": "Disabled" }
+    },
+    "nonComplianceMessages": [
+      { "message": "This resource is missing/invalid 'data classification', lacks 'compliance' on restricted data, or violates a classification-driven security control. See the SecOps tagging standard." }
+    ],
+    "metadata": { "assignedBy": "Security/Compliance", "pillar": "SecOps", "phase": "1-audit" }
+  },
+  "identity": { "type": "SystemAssigned" },
+  "location": "eastus"
+}

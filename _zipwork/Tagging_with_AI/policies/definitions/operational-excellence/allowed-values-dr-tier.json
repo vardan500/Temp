@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "displayName": "OpsExcellence - Restrict allowed values for 'dr tier' tag",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits or denies resources whose 'dr tier' tag value is not in the approved list, standardizing disaster-recovery (RTO/RPO) tiers. Only evaluates when the tag exists.",
+    "metadata": { "category": "Tags", "pillar": "OperationalExcellence", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "dr tier"
+      },
+      "allowedValues": {
+        "type": "Array",
+        "metadata": { "displayName": "Allowed dr tier values" },
+        "defaultValue": [ "tier1", "tier2", "tier3", "none" ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "true"
+          },
+          {
+            "not": {
+              "field": "[concat('tags[', parameters('tagName'), ']')]",
+              "in": "[parameters('allowedValues')]"
+            }
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+app,cost center,department,project,workload
+online-banking,CC-4100,DigitalBanking,DAO,member-chatbot
+loan-origination,CC-5200,Lending,AKC,doc-intelligence-loans
+fraud-analytics,CC-3300,RiskFraud,Consortium,fraud-copilot

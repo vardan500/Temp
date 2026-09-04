@@ -1,0 +1,51 @@
+{
+  "properties": {
+    "displayName": "SecOps - Inherit 'data classification' tag from the resource group",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Adds the 'data classification' tag with the value from the parent resource group when missing, so classification cascades like the default tags. Uses the Modify effect and requires a managed identity with 'Tag Contributor' on the assignment scope. Run a remediation task to backfill existing resources.",
+    "metadata": { "category": "Tags", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Modify", "Disabled" ],
+        "defaultValue": "Modify"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "data classification"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "false"
+          },
+          {
+            "value": "[resourceGroup().tags[parameters('tagName')]]",
+            "notEquals": ""
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "roleDefinitionIds": [
+            "/providers/Microsoft.Authorization/roleDefinitions/4a9ae827-6dc8-4573-8ac7-8239d42aa03f"
+          ],
+          "operations": [
+            {
+              "operation": "add",
+              "field": "[concat('tags[', parameters('tagName'), ']')]",
+              "value": "[resourceGroup().tags[parameters('tagName')]]"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

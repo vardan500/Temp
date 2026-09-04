@@ -1,0 +1,46 @@
+{
+  "properties": {
+    "displayName": "Tagging - FinOps Pillar",
+    "policyType": "Custom",
+    "description": "FinOps-pillar tag governance: validates value integrity for cost-allocation tags (cost center format, owner email) and audits diagnostics coverage on AI resources (all AI resources are shared paygo endpoints attributed by usage telemetry keyed on the consuming application's identity, which equals its 'app' tag value; no AI-specific tags exist). Presence/cascade of the default tags (app, cost center, department, env, owner, project, tier) is handled by the existing default-tag policy. Shared 'effect' parameter for phased enforcement; separate 'diagnosticsEffect' for the AuditIfNotExists diagnostics check.",
+    "metadata": { "category": "Tags", "pillar": "FinOps", "version": "4.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect for FinOps tag policies" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "diagnosticsEffect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect for the AI diagnostics coverage check" },
+        "allowedValues": [ "AuditIfNotExists", "Disabled" ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyDefinitions": [
+      {
+        "policyDefinitionReferenceId": "cost-center-format",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/match-format-cost-center')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "cost-allocation" ]
+      },
+      {
+        "policyDefinitionReferenceId": "owner-email-format",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/match-format-owner')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "cost-allocation" ]
+      },
+      {
+        "policyDefinitionReferenceId": "ai-diagnostics-coverage",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/audit-diagnostics-on-ai')]",
+        "parameters": { "effect": { "value": "[parameters('diagnosticsEffect')]" } },
+        "groupNames": [ "ai-cost-allocation" ]
+      }
+    ],
+    "policyDefinitionGroups": [
+      { "name": "cost-allocation", "displayName": "Cost allocation & accountability integrity" },
+      { "name": "ai-cost-allocation", "displayName": "AI resource chargeback (tokens/PTU split-ready)" }
+    ]
+  }
+}

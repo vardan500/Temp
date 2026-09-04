@@ -1,0 +1,42 @@
+{
+  "properties": {
+    "displayName": "FinOps - Validate 'cost center' tag value format",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits or denies resources whose 'cost center' tag value does not match the approved code format, preventing typos that fragment chargeback. Only evaluates when the tag exists (presence/cascade is handled by the existing default-tag policy). Uses the match syntax: '#' = digit, '?' = letter.",
+    "metadata": { "category": "Tags", "pillar": "FinOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "cost center"
+      },
+      "pattern": {
+        "type": "String",
+        "metadata": { "displayName": "Allowed value pattern (match syntax)" },
+        "defaultValue": "CC-####"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "true"
+          },
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "notMatch": "[parameters('pattern')]"
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

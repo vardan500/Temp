@@ -1,0 +1,14 @@
+// Tokens per consuming application and model — Azure OpenAI, split input.
+// Each application has exactly one calling identity, named exactly its 'app' tag value
+// (APIM subscription or AAD app registration), so telemetry yields 'app' directly.
+// Adjust column/property names to match your diagnostic or APIM log schema.
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.COGNITIVESERVICES"
+| where TimeGenerated between (startofmonth(now()) .. now())
+| extend app = tostring(properties_app_id_s)            // identity name == 'app' tag value
+| extend model = tostring(properties_model_s)
+| extend promptTokens = toint(promptTokens_d)
+| extend completionTokens = toint(completionTokens_d)
+| summarize prompt = sum(promptTokens), completion = sum(completionTokens) by app, model
+| extend totalTokens = prompt + completion
+| order by totalTokens desc

@@ -1,0 +1,29 @@
+{
+  "properties": {
+    "displayName": "SecOps - Require 'data classification' tag on resources and resource groups",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "Requires the 'data classification' tag on resources AND resource groups (mode All). Net-new tag driving security/compliance scoping (GLBA/PCI). Effect parameterized (Audit by default) for phased enforcement (Audit -> Deny).",
+    "metadata": { "category": "Tags", "pillar": "SecOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "data classification"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "[concat('tags[', parameters('tagName'), ']')]",
+        "exists": "false"
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

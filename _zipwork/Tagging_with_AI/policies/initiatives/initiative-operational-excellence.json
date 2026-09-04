@@ -1,0 +1,52 @@
+{
+  "properties": {
+    "displayName": "Tagging - Operational Excellence Pillar",
+    "policyType": "Custom",
+    "description": "Operational Excellence-pillar tag governance: value-restricts and requires operational tags (criticality on prod, backup, dr tier, managed by). Shared 'effect' parameter for phased enforcement.",
+    "metadata": { "category": "Tags", "pillar": "OperationalExcellence", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect for Operational Excellence tag policies" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyDefinitions": [
+      {
+        "policyDefinitionReferenceId": "allowed-criticality",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/allowed-values-criticality')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "resilience" ]
+      },
+      {
+        "policyDefinitionReferenceId": "require-criticality-prod",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/require-criticality-on-prod')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "resilience" ]
+      },
+      {
+        "policyDefinitionReferenceId": "allowed-backup",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/allowed-values-backup')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "resilience" ]
+      },
+      {
+        "policyDefinitionReferenceId": "allowed-dr-tier",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/allowed-values-dr-tier')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "resilience" ]
+      },
+      {
+        "policyDefinitionReferenceId": "require-managed-by",
+        "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/require-tag-managed-by')]",
+        "parameters": { "effect": { "value": "[parameters('effect')]" } },
+        "groupNames": [ "operations" ]
+      }
+    ],
+    "policyDefinitionGroups": [
+      { "name": "resilience", "displayName": "Resilience & recovery (criticality, backup, DR)" },
+      { "name": "operations", "displayName": "Operational ownership & routing" }
+    ]
+  }
+}

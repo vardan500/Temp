@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "displayName": "FinOps - Validate 'owner' tag is an email",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits resources whose 'owner' tag value is not an email-like string, ensuring cost/budget alerts and accountability route to a real mailbox or distribution list. Only evaluates when the tag exists.",
+    "metadata": { "category": "Tags", "pillar": "FinOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "owner"
+      },
+      "pattern": {
+        "type": "String",
+        "metadata": { "displayName": "Allowed value pattern (like syntax)" },
+        "defaultValue": "*@*.*"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('tagName'), ']')]",
+            "exists": "true"
+          },
+          {
+            "not": {
+              "field": "[concat('tags[', parameters('tagName'), ']')]",
+              "like": "[parameters('pattern')]"
+            }
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

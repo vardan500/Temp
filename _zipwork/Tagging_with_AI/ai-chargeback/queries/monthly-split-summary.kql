@@ -1,0 +1,29 @@
+// Monthly split summary — per-application charge, split PER MODEL then summed.
+// Token prices differ per model, so each model's actual cost is split by that model's
+// tokens only. app_cost(a) = Σ_m share(a,m) × actual_cost(m).
+// Fill modelCosts from the Cost Management usage detail/export: Azure OpenAI paygo bills
+// per-model meter lines, so actual_cost(m) is read, not estimated.
+// Identity name == 'app' tag value (one identity per app), so results join directly to
+// consumer-map.csv on 'app'.
+let modelCosts = datatable(model:string, actualCost:double)
+[
+  "gpt-4o",      8000.0,
+  "gpt-4o-mini", 2000.0
+];
+let usage = AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.COGNITIVESERVICES"
+| where TimeGenerated between (startofmonth(now()) .. now())
+| extend app = iff(isempty(tostring(properties_app_id_s)), "(unmapped)", tostring(properties_app_id_s))
+| extend model = tostring(properties_model_s)
+| extend totalTokens = toint(promptTokens_d) + toint(completionTokens_d)
+| summarize tokens = sum(totalTokens) by app, model;
+usage
+| join kind=inner (usage | summarize modelTokens = sum(tokens) by model) on model
+| join kind=inner modelCosts on model
+| extend share = todouble(tokens) / todouble(modelTokens)
+| extend charge = round(share * actualCost, 2)
+| summarize charge = sum(charge), tokens = sum(tokens) by app
+| order by charge desc
+// Note: where applications differ sharply in prompt/completion shape, weight the two
+// token types by their prices instead of summing them (completion tokens cost more) —
+// see docs/08 §6. Reconcile Σ charge back to Cost Management; delta = unallocated bucket.

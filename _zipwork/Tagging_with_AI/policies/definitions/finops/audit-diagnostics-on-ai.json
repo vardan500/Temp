@@ -1,0 +1,43 @@
+{
+  "properties": {
+    "displayName": "FinOps - Audit diagnostic settings on AI resources",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits that a diagnostic setting with logs enabled exists on AI resource types. All AI resources are shared endpoints whose cost is attributed by usage telemetry, so a resource without diagnostics produces cost that cannot be allocated to any consumer (it lands in the platform bucket). AuditIfNotExists only; remediation (deploy of diagnostic settings) is an operational task outside this initiative.",
+    "metadata": { "category": "Monitoring", "pillar": "FinOps", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "AuditIfNotExists", "Disabled" ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "in": [
+          "Microsoft.CognitiveServices/accounts",
+          "Microsoft.MachineLearningServices/workspaces",
+          "Microsoft.Search/searchServices"
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Insights/diagnosticSettings",
+          "existenceCondition": {
+            "count": {
+              "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+              "where": {
+                "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                "equals": "true"
+              }
+            },
+            "greater": 0
+          }
+        }
+      }
+    }
+  }
+}

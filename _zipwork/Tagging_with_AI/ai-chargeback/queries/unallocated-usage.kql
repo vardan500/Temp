@@ -1,0 +1,20 @@
+// Unallocated usage — calls whose app identity is missing, empty, or not in the
+// consumer map. Feed this to the platform cost-center bucket and track as a KPI
+// (drive to zero). A hit here usually means an identity was created whose name does not
+// match an 'app' value in consumer-map.csv — fix the naming or add the map row.
+// Replace the datatable below with your consumer-map.csv contents (or externaldata()).
+let consumerMap = datatable(app:string)
+[
+  "online-banking",
+  "loan-origination",
+  "fraud-analytics"
+];
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.COGNITIVESERVICES"
+| where TimeGenerated between (startofmonth(now()) .. now())
+| extend app = tostring(properties_app_id_s)
+| extend promptTokens = toint(promptTokens_d), completionTokens = toint(completionTokens_d)
+| extend totalTokens = promptTokens + completionTokens
+| where isempty(app) or app !in (consumerMap)
+| summarize unmappedTokens = sum(totalTokens), calls = count() by app = iff(isempty(app), "(none)", app)
+| order by unmappedTokens desc

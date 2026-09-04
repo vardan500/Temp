@@ -1,0 +1,29 @@
+{
+  "properties": {
+    "displayName": "OpsExcellence - Require 'managed by' tag on resources",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits resources missing the 'managed by' tag, which identifies the operating team or MSP responsible for day-to-day operations (distinct from 'owner', who is accountable). Effect parameterized (Audit by default).",
+    "metadata": { "category": "Tags", "pillar": "OperationalExcellence", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": { "displayName": "Tag Name" },
+        "defaultValue": "managed by"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "[concat('tags[', parameters('tagName'), ']')]",
+        "exists": "false"
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

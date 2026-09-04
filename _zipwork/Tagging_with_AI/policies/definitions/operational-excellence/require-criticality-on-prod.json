@@ -1,0 +1,47 @@
+{
+  "properties": {
+    "displayName": "OpsExcellence - Require 'criticality' tag on production resources",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "Audits or denies production resources (env = prod) that lack a 'criticality' tag, ensuring DR/BCP prioritization is defined where it matters most. Only applies when env = prod.",
+    "metadata": { "category": "Tags", "pillar": "OperationalExcellence", "version": "1.0.0" },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": { "displayName": "Effect" },
+        "allowedValues": [ "Audit", "Deny", "Disabled" ],
+        "defaultValue": "Audit"
+      },
+      "envTag": {
+        "type": "String",
+        "metadata": { "displayName": "Environment tag name" },
+        "defaultValue": "env"
+      },
+      "prodValue": {
+        "type": "String",
+        "metadata": { "displayName": "Production env value" },
+        "defaultValue": "prod"
+      },
+      "criticalityTag": {
+        "type": "String",
+        "metadata": { "displayName": "Criticality tag name" },
+        "defaultValue": "criticality"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "[concat('tags[', parameters('envTag'), ']')]",
+            "equals": "[parameters('prodValue')]"
+          },
+          {
+            "field": "[concat('tags[', parameters('criticalityTag'), ']')]",
+            "exists": "false"
+          }
+        ]
+      },
+      "then": { "effect": "[parameters('effect')]" }
+    }
+  }
+}

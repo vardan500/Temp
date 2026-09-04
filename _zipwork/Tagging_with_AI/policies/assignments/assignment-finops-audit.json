@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "displayName": "Tagging FinOps - Subscription Audit (Phase 1)",
+    "description": "Phase 1 assignment of the FinOps tagging initiative at subscription scope. Audit-only. Promote to Deny once cost-tag value integrity is high.",
+    "policyDefinitionId": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/policySetDefinitions/initiative-finops",
+    "enforcementMode": "Default",
+    "parameters": {
+      "effect": { "value": "Audit" },
+      "diagnosticsEffect": { "value": "AuditIfNotExists" }
+    },
+    "nonComplianceMessages": [
+      { "message": "A cost-allocation requirement is not met: invalid tag value (e.g., 'cost center' format or 'owner' email) or missing diagnostic settings on an AI resource. See the FinOps tagging standard." }
+    ],
+    "metadata": { "assignedBy": "Cloud/Platform Team", "pillar": "FinOps", "phase": "1-audit" }
+  }
+}
